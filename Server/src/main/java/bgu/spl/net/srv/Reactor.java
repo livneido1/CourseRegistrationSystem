@@ -48,11 +48,11 @@ public class Reactor<T> implements Server<T> {
 
                 selector.select();
                 runSelectionThreadTasks();
-
+                // key - chan, interested ops , attachment
                 for (SelectionKey key : selector.selectedKeys()) {
 
                     if (!key.isValid()) {
-                        continue;
+                         continue;
                     } else if (key.isAcceptable()) {
                         handleAccept(serverSock, selector);
                     } else {
@@ -99,6 +99,7 @@ public class Reactor<T> implements Server<T> {
         clientChan.register(selector, SelectionKey.OP_READ, handler);
     }
 
+    // key - chan, interested ops , attachment
     private void handleReadWrite(SelectionKey key) {
         @SuppressWarnings("unchecked")
         NonBlockingConnectionHandler<T> handler = (NonBlockingConnectionHandler<T>) key.attachment();
