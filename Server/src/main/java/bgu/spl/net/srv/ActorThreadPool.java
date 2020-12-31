@@ -21,7 +21,7 @@ public class ActorThreadPool {
     public ActorThreadPool(int threads) {
         this.threads = Executors.newFixedThreadPool(threads);
         acts = new WeakHashMap<>();
-        playingNow = ConcurrentHashMap.newKeySet();
+        playingNow = ConcurrentHashMap.newKeySet(); //submitted clients
         actsRWLock = new ReentrantReadWriteLock();
     }
 
