@@ -50,50 +50,50 @@ public class Database {
 		return false;
 	}
 
-	boolean regAdmin(String userName, String password){
+	public boolean regAdmin(String userName, String password){
 		throw new NotImplementedException();
 	}
 
-	boolean studentReg(String userName, String password){
+	public boolean studentReg(String userName, String password){
 		throw new NotImplementedException();
 	}
 
-	synchronized boolean  logIn(String userName, String password){
+	public synchronized boolean  logIn(String userName, String password){
 		throw new NotImplementedException();
 	}
 
-	boolean logout(String userName){
+	public boolean logout(String userName){
 		throw new NotImplementedException();
 	}
-	boolean courseReg(String userName , int CourseNum)
+	public boolean courseReg(String userName , int CourseNum)
 	{
 		throw new NotImplementedException();
 	}
-	List<Integer> kdamCheck (int courseNum)
+	public List<Integer> kdamCheck (int courseNum)
 	{
 		throw new NotImplementedException();
 	}
-	List<Integer> getCourseStats(int courseNum)
+	public List<Integer> getCourseStats(int courseNum)
 	{
 		throw new NotImplementedException();
 	}
-	UserInfo getStudentStats(String userName,String studentName)
+	public UserInfo getStudentStats(String userName,String studentName)
 	{
 		throw new NotImplementedException();
 	}
-	boolean isRegistered(String userName,int courseNum)
+	public boolean isRegistered(String userName,int courseNum)
 	{
 		throw new NotImplementedException();
 	}
-	boolean unregister(String userName,int courseNum)
+	public boolean unregister(String userName,int courseNum)
 	{
 		throw new NotImplementedException();
 	}
-	List<String> getCourses(String userName)
+	public List<String> getCourses(String userName)
 	{
 		throw new NotImplementedException();
 	}
-	String getPassword(String userName)
+	public String getPassword(String userName)
 	{
 		throw new NotImplementedException();
 	}
