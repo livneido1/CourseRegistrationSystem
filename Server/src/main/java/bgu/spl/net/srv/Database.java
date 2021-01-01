@@ -2,9 +2,12 @@ package bgu.spl.net.srv;
 
 import bgu.spl.net.srv.CourseInfo;
 import bgu.spl.net.srv.UserInfo;
+import sun.awt.image.ImageWatched;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.xml.crypto.Data;
 import java.util.HashMap;
@@ -21,15 +24,20 @@ public class Database {
 	// TODO need to implement the Singelton implementation
 	private final static Database instace=null;
 	private HashMap<String, UserInfo> userMap;
-	private ConcurrentHashMap<String, CourseInfo> courseMap;
+	private ConcurrentHashMap<Integer, CourseInfo> courseMap;
 	private HashMap<String, Boolean> loggedInMap;
+	private LinkedList<Integer> coursesOrder;
 
 
-
+	private static class DatabaseHolder{
+		private static Database instance = new Database();
+	}
 
 	//to prevent user from creating new Database
 	private Database() {
-		// TODO: implement
+		userMap=new HashMap<>();
+		courseMap=new ConcurrentHashMap<>();
+		loggedInMap=new HashMap<>();
 	}
 
 	/**
@@ -38,64 +46,178 @@ public class Database {
 
 	// TODO need to implement!!!
 	public static Database getInstance() {
-		return instace;
+		return DatabaseHolder.instance;
 	}
 	
 	/**
 	 * loades the courses from the file path specified 
 	 * into the Database, returns true if successful.
 	 */
-	boolean initialize(String coursesFilePath) {
+	public boolean initialize(String coursesFilePath) {
 		// TODO: implement
 		return false;
 	}
 
-	boolean regAdmin(String userName, String password){
-		throw new NotImplementedException();
+	public boolean regAdmin(String userName, String password){
+		if (!userMap.containsKey(userName))
+		{
+			userMap.put(userName,new UserInfo(password,true));
+			loggedInMap.put(userName,false);
+			return true;
+		}
+		return false;
 	}
 
-	boolean studentReg(String userName, String password){
-		throw new NotImplementedException();
+	public boolean studentReg(String userName, String password){
+		if (!userMap.containsKey(userName))
+		{
+			userMap.put(userName,new UserInfo(password,false));
+			loggedInMap.put(userName,false);
+			return true;
+		}
+		return false;
 	}
 
-	synchronized boolean  logIn(String userName, String password){
-		throw new NotImplementedException();
+	public synchronized boolean  logIn(String userName, String password){
+		if (!userMap.containsKey(userName)||!userMap.get(userName).getPassword().equals(password)||!loggedInMap.get(userName))
+		{
+			loggedInMap.put(userName,true);
+			return true;
+		}
+		return false;
 	}
 
-	boolean logout(String userName){
-		throw new NotImplementedException();
+	public boolean logout(String userName){
+		if (loggedInMap.containsKey(userName))
+		{
+			loggedInMap.remove(userName);
+			return true;
+		}
+		return false;
 	}
-	boolean courseReg(String userName , int CourseNum)
+	public boolean courseReg(String userName , int courseNum)
 	{
-		throw new NotImplementedException();
+		//user isn't registered/ user isn't logged in /user is an admin/ course dont exist
+		if(!userMap.containsKey(userName)||!loggedInMap.containsKey(userName)||userMap.get(userName).isAdmin()||!courseMap.containsKey(courseNum))
+		{
+			return false;
+		}
+		else {
+			 return courseMap.get(courseNum).registerStudent(userName);
+		}
 	}
-	List<Integer> kdamCheck (int courseNum)
-	{
-		throw new NotImplementedException();
+	public LinkedList<Integer> kdamCheck (int courseNum,String userName) throws Exception {
+		if (!courseMap.containsKey(courseNum)) {
+			throw new NoSuchElementException();
+		}
+		if (!userMap.get(userName).isAdmin()||!loggedInMap.get(userName))
+		{
+			throw new IllegalArgumentException();
+		}
+		LinkedList<Integer> afterOrder=OrderCourses(courseMap.get(courseNum).getKdamCourses());
+		return afterOrder;
 	}
-	List<Integer> getCourseStats(int courseNum)
+
+
+
+	public String getCourseStats(int courseNum,String userName) throws Exception
 	{
-		throw new NotImplementedException();
+		if (!courseMap.containsKey(courseNum))
+		{
+			throw new NoSuchElementException();
+		}
+		if (userMap.get(userName).isAdmin()||!loggedInMap.get(userName))
+		{
+			throw new IllegalArgumentException();
+		}
+		CourseInfo courseInfo=courseMap.get(courseNum);
+		String output="Course:("+courseNum+") "+courseInfo.getCourseName()+"\n"
+				+"Seats Available:"+courseInfo.getAvailableSeats()+"/"+courseInfo.getMaxNumOfSeats()+"\n"+
+				"Students Registered:[";
+		LinkedList<String> studentsInCourse=courseInfo.getRegisteredStudents();
+		studentsInCourse=OrderAlphaBatic(studentsInCourse);
+		for (String name:studentsInCourse)
+		{
+			output=output+name;
+		}
+		output=output+"]";
+		return output;
 	}
-	UserInfo getStudentStats(String userName,String studentName)
+
+
+
+
+	public String getStudentStats(String userName,String studentName) throws Exception
 	{
-		throw new NotImplementedException();
+		if (userMap.get(userName).isAdmin()||!loggedInMap.get(userName))
+		{
+			throw new IllegalArgumentException();
+		}
+		if (!userMap.containsKey(studentName))
+		{
+			throw new NoSuchElementException();
+		}
+		UserInfo studentInfo=userMap.get(studentName);
+		String output="Student: "+studentName+"\n"+"Courses:[";
+		LinkedList<Integer> orederedList=OrderCourses(studentInfo.getCourses());
+		for (Integer num:orederedList)
+		{
+			output=output+courseMap.get(num).getCourseName();
+		}
+		output=output+"]";
+		return output;
 	}
-	boolean isRegistered(String userName,int courseNum)
+	public boolean isRegistered(String userName,int courseNum) throws Exception
 	{
-		throw new NotImplementedException();
+		if (!loggedInMap.get(userName)||!courseMap.containsKey(courseNum))
+		{
+			throw new IllegalArgumentException();
+		}
+		return userMap.get(userName).getCourses().contains(courseNum);
 	}
-	boolean unregister(String userName,int courseNum)
+	public boolean unregister(String userName,int courseNum)
 	{
-		throw new NotImplementedException();
+		try {
+			if(isRegistered(userName, courseNum))
+			{
+				courseMap.get(courseNum).unregister(userName);
+				userMap.get(userName).unregister(courseNum);
+				return true;
+			}
+			else return false;
+		}
+		catch (Exception e)
+		{
+			return false;
+		}
 	}
-	List<String> getCourses(String userName)
+
+	public LinkedList<Integer> getCourses(String userName) throws Exception
 	{
-		throw new NotImplementedException();
+		if (userMap.get(userName).isAdmin())
+		{
+			throw new IllegalArgumentException();
+		}
+		return OrderCourses(userMap.get(userName).getCourses());
+
 	}
-	String getPassword(String userName)
+	public String getPassword(String userName)
 	{
-		throw new NotImplementedException();
+		return userMap.get(userName).getPassword();
+	}
+	private LinkedList<Integer> OrderCourses(LinkedList<Integer> courseList) {
+		LinkedList<Integer> result=new LinkedList<>();
+		for (Integer curr : coursesOrder){
+			if (courseList.contains(curr))
+			{
+				result.addLast(curr);
+			}
+		}
+		return result;
+	}
+	private LinkedList<String> OrderAlphaBatic(LinkedList<String> studentsInCourse) {
+		studentsInCourse.sort(String::compareTo);
+		return studentsInCourse;
 	}
 
 
