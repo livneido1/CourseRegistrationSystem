@@ -14,7 +14,8 @@ public class SubmissionProtocol implements MessagingProtocol<String> {
 
     @Override
     public String process(String msg) {
-        if (msg.startsWith("ADMINREG")){
+        if (msg.startsWith("ADMINREG"))
+
 
         }
         if ()
