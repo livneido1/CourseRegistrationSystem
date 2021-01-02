@@ -160,10 +160,11 @@ public class SubmissionProtocol implements MessagingProtocol<String> {
                     }
                     output = "]";
 
-                    //TODO need to check whether should return ACK too
+
+                    output = successMSG((opCode)) + "\n" + output;
                     return output;
 
-                } catch (Exception e){
+                } catch (NoSuchElementException | IllegalArgumentException e){
                     errorMSG(opCode);
                 }
 
@@ -188,17 +189,18 @@ public class SubmissionProtocol implements MessagingProtocol<String> {
                 }
                 Database database = Database.getInstance();
                 try {
-                    // TODO need to check whether need to return ACK message aswell
-                    String output = database.getCourseStats(courseNum, name);
+                    String output = successMSG((opCode)) +"\n";
+                    output =output + database.getCourseStats(courseNum, name);
+
                     return output;
-                }catch (Exception e){
-                    return errorMSG(opCode);
+                } catch (NoSuchElementException | IllegalArgumentException e){
+                    errorMSG(opCode);
                 }
             }
         }
 
         // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>STUDENTSTAT<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-        if (opCode.equals("COURSESTAT")){
+        if (opCode.equals("STUDENTSTAT")){
             if (splitted.size() != 2) // should only contain opcode and student name
                 return errorMSG(opCode);
             if (name==null) // the user has not been logged in yet
@@ -210,11 +212,11 @@ public class SubmissionProtocol implements MessagingProtocol<String> {
 
                 Database database = Database.getInstance();
                 try {
-                    // TODO need to check whether need to return ACK message aswell
-                    String output = database.getStudentStats(name, studentName);
+                    String output = successMSG(opCode) + "\n";
+                    output = output + database.getStudentStats(name, studentName);
                     return output;
-                }catch (Exception e){
-                    return errorMSG(opCode);
+                } catch (NoSuchElementException | IllegalArgumentException e){
+                    errorMSG(opCode);
                 }
             }
         }
@@ -234,15 +236,15 @@ public class SubmissionProtocol implements MessagingProtocol<String> {
                     courseNum =  Integer.parseInt(numTemp);
                     Database database = Database.getInstance();
                     boolean success = database.isRegistered(name, courseNum );
-                    if (success)
-                        return "REGISTERED";
+                    if (success) {
+                        String output = successMSG(opCode) + "\n";
+                        return  output + "REGISTERED";
+                    }
                     else
                         return "NOT REGISTERED";
-                } catch (Exception e) {
-                    return errorMSG(opCode);
+                } catch (NoSuchElementException | IllegalArgumentException e){
+                    errorMSG(opCode);
                 }
-
-
             }
         }
 
@@ -257,18 +259,14 @@ public class SubmissionProtocol implements MessagingProtocol<String> {
             else{
                 String numTemp = splitted.get(1);
                 int courseNum;
-                try {
-                    courseNum =  Integer.parseInt(numTemp);
-                    Database database = Database.getInstance();
-                    boolean success = database.unregister(name, courseNum );
-                    if (success)
-                        return successMSG(opCode);
-                    else
-                        return errorMSG(opCode);
-                } catch (Exception e) {
-                    return errorMSG(opCode);
-                }
 
+                courseNum =  Integer.parseInt(numTemp);
+                Database database = Database.getInstance();
+                boolean success = database.unregister(name, courseNum );
+                if (success)
+                    return successMSG(opCode);
+                else
+                    return errorMSG(opCode);
 
             }
         }
@@ -283,7 +281,8 @@ public class SubmissionProtocol implements MessagingProtocol<String> {
             }
             else{
                 Database database =  Database.getInstance();
-                String output ="[";
+                String output =  successMSG(opCode) + "\n";
+                output =output + "[";
                 try {
                     List<Integer> courseList = database.getCourses(name);
 
@@ -292,7 +291,7 @@ public class SubmissionProtocol implements MessagingProtocol<String> {
                     }
                      output = output + "]";
                      return output;
-                }catch (Exception e){
+                }catch (IllegalArgumentException e){
                     return errorMSG(opCode);
                 }
             }
