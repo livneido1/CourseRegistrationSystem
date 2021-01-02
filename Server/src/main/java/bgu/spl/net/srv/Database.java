@@ -23,7 +23,7 @@ import java.util.HashMap;
 public class Database {
 	// TODO need to implement the Singelton implementation
 	private final static Database instace=null;
-	private HashMap<String, UserInfo> userMap;
+	private ConcurrentHashMap<String, UserInfo> userMap;
 	private ConcurrentHashMap<Integer, CourseInfo> courseMap;
 	private HashMap<String, Boolean> loggedInMap;
 	private LinkedList<Integer> coursesOrder;
@@ -35,7 +35,7 @@ public class Database {
 
 	//to prevent user from creating new Database
 	private Database() {
-		userMap=new HashMap<>();
+		userMap=new ConcurrentHashMap<>();
 		courseMap=new ConcurrentHashMap<>();
 		loggedInMap=new HashMap<>();
 	}
@@ -79,7 +79,7 @@ public class Database {
 	}
 
 	public synchronized boolean  logIn(String userName, String password){
-		if (!userMap.containsKey(userName)||!userMap.get(userName).getPassword().equals(password)||!loggedInMap.get(userName))
+		if (userMap.containsKey(userName)&&userMap.get(userName).getPassword().equals(password)&&!loggedInMap.get(userName))
 		{
 			loggedInMap.put(userName,true);
 			return true;
@@ -88,9 +88,9 @@ public class Database {
 	}
 
 	public boolean logout(String userName){
-		if (loggedInMap.containsKey(userName))
+		if (loggedInMap.get(userName))
 		{
-			loggedInMap.remove(userName);
+			loggedInMap.put(userName,false);
 			return true;
 		}
 		return false;
@@ -102,15 +102,28 @@ public class Database {
 		{
 			return false;
 		}
+		else if (studentDidKdam(courseMap.get(courseNum).getKdamCourses(),userMap.get(userName).getCourses()))
+		{
+			return false;
+		}
 		else {
-			 return courseMap.get(courseNum).registerStudent(userName);
+			 if (courseMap.get(courseNum).registerStudent(userName))
+			 {
+				 userMap.get(userName).getCourses().add(courseNum);
+				 return true;
+			 }
+			 return false;
 		}
 	}
-	public LinkedList<Integer> kdamCheck (int courseNum,String userName) throws Exception {
+
+
+
+
+	public LinkedList<Integer> kdamCheck (int courseNum,String userName) {
 		if (!courseMap.containsKey(courseNum)) {
 			throw new NoSuchElementException();
 		}
-		if (!userMap.get(userName).isAdmin()||!loggedInMap.get(userName))
+		if (userMap.get(userName).isAdmin()||!loggedInMap.get(userName))
 		{
 			throw new IllegalArgumentException();
 		}
@@ -120,7 +133,7 @@ public class Database {
 
 
 
-	public String getCourseStats(int courseNum,String userName) throws Exception
+	public String getCourseStats(int courseNum,String userName)
 	{
 		if (!courseMap.containsKey(courseNum))
 		{
@@ -131,25 +144,27 @@ public class Database {
 			throw new IllegalArgumentException();
 		}
 		CourseInfo courseInfo=courseMap.get(courseNum);
-		String output="Course:("+courseNum+") "+courseInfo.getCourseName()+"\n"
-				+"Seats Available:"+courseInfo.getAvailableSeats()+"/"+courseInfo.getMaxNumOfSeats()+"\n"+
-				"Students Registered:[";
+		String output="Course: ("+courseNum+") "+courseInfo.getCourseName()+"\n"
+				+"Seats Available: "+courseInfo.getAvailableSeats()+"/"+courseInfo.getMaxNumOfSeats()+"\n"+
+				"Students Registered: [";
 		LinkedList<String> studentsInCourse=courseInfo.getRegisteredStudents();
 		studentsInCourse=OrderAlphaBatic(studentsInCourse);
 		for (String name:studentsInCourse)
 		{
-			output=output+name;
+			output=output+name+", ";
 		}
-		output=output+"]";
+		if (!studentsInCourse.isEmpty())
+		{output=output.substring(0,output.length()-3)+"]";}
+		else{ output=output+"]";}
 		return output;
 	}
 
 
 
 
-	public String getStudentStats(String userName,String studentName) throws Exception
+	public String getStudentStats(String userName,String studentName)
 	{
-		if (userMap.get(userName).isAdmin()||!loggedInMap.get(userName))
+		if (!userMap.get(userName).isAdmin()||!loggedInMap.get(userName))
 		{
 			throw new IllegalArgumentException();
 		}
@@ -158,20 +173,27 @@ public class Database {
 			throw new NoSuchElementException();
 		}
 		UserInfo studentInfo=userMap.get(studentName);
-		String output="Student: "+studentName+"\n"+"Courses:[";
-		LinkedList<Integer> orederedList=OrderCourses(studentInfo.getCourses());
-		for (Integer num:orederedList)
+		String output="Student: "+studentName+"\n"+"Courses: [";
+		LinkedList<Integer> orderedList=OrderCourses(studentInfo.getCourses());
+		for (Integer num:orderedList)
 		{
-			output=output+courseMap.get(num).getCourseName();
+			output=output+courseMap.get(num).getCourseName()+", ";
 		}
-		output=output+"]";
+		if (!orderedList.isEmpty())
+			output=output.substring(0,output.length()-3)+"]";
+		else
+			output=output+"]";
 		return output;
 	}
-	public boolean isRegistered(String userName,int courseNum) throws Exception
+	public boolean isRegistered(String userName,int courseNum)
 	{
-		if (!loggedInMap.get(userName)||!courseMap.containsKey(courseNum))
+		if (!loggedInMap.get(userName)||userMap.get(userName).isAdmin())
 		{
 			throw new IllegalArgumentException();
+		}
+		if (!courseMap.containsKey(courseNum))
+		{
+			throw new NoSuchElementException();
 		}
 		return userMap.get(userName).getCourses().contains(courseNum);
 	}
@@ -192,7 +214,7 @@ public class Database {
 		}
 	}
 
-	public LinkedList<Integer> getCourses(String userName) throws Exception
+	public LinkedList<Integer> getCourses(String userName)
 	{
 		if (userMap.get(userName).isAdmin())
 		{
@@ -218,6 +240,16 @@ public class Database {
 	private LinkedList<String> OrderAlphaBatic(LinkedList<String> studentsInCourse) {
 		studentsInCourse.sort(String::compareTo);
 		return studentsInCourse;
+	}
+	private boolean studentDidKdam(LinkedList<Integer> kdamCourses, LinkedList<Integer> courses) {
+		for (Integer num:kdamCourses)
+		{
+			if (!courses.contains(num))
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 
 

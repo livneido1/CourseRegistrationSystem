@@ -60,5 +60,6 @@ public class CourseInfo {
     public void unregister(String studentName)
     {
         registeredStudents.remove(studentName);
+        availableSeats++;
     }
 }
