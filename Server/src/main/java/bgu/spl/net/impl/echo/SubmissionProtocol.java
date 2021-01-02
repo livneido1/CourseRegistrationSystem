@@ -13,6 +13,7 @@ import java.util.NoSuchElementException;
 
 public class SubmissionProtocol implements MessagingProtocol<String> {
     String name;
+    boolean shouldTerminate;
 
     public SubmissionProtocol(){
         this.name=null;
@@ -96,8 +97,9 @@ public class SubmissionProtocol implements MessagingProtocol<String> {
                 Database database = Database.getInstance();
                 boolean success = database.logout(name);
                 if (success) {
-                    shouldTerminate();
+
                     name = null; // updates so it won't be able to work till logging in back
+                    shouldTerminate =true;
                     return successMSG(opCode);
                 }
                 else
@@ -308,7 +310,9 @@ public class SubmissionProtocol implements MessagingProtocol<String> {
 
     @Override
     public boolean shouldTerminate() {
-        return false;
+        return  shouldTerminate;
+
+
     }
 
     /**
