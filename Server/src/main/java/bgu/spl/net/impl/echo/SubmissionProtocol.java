@@ -335,10 +335,10 @@ public class SubmissionProtocol implements MessagingProtocol<String> {
     }
 
     private String errorMSG(String opcode){
-        return "ERR";
+        return "ERR " + opcode;
     }
 
     private String successMSG(String opCode){
-        return "ACK" + opCode;
+        return "ACK " + opCode;
     }
 }
