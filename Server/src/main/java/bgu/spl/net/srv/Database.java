@@ -119,7 +119,7 @@ public class Database {
 
 
 
-	public LinkedList<Integer> kdamCheck (int courseNum,String userName) throws Exception {
+	public LinkedList<Integer> kdamCheck (int courseNum,String userName) {
 		if (!courseMap.containsKey(courseNum)) {
 			throw new NoSuchElementException();
 		}
