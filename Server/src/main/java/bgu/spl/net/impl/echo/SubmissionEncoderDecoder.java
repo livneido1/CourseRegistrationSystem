@@ -25,7 +25,7 @@ public class SubmissionEncoderDecoder implements MessageEncoderDecoder<String> {
 
     @Override
     public byte[] encode(String message) {//TODO: check if we need to send opCode as bytes or String as bytes
-      byte[] output=new byte[1 << 10];
+    /*  byte[] output=new byte[1 << 10];
       output[0]=0;output[1]=0;output[2]=0;
       if (message.startsWith("ACK"))
       {
@@ -90,7 +90,8 @@ public class SubmissionEncoderDecoder implements MessageEncoderDecoder<String> {
               }
           }
           return output;
-      }
+      }*/
+    return (message+"\n").getBytes();
     }
 
 
