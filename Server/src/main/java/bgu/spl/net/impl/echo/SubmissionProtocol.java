@@ -2,10 +2,7 @@ package bgu.spl.net.impl.echo;
 
 import bgu.spl.net.api.MessagingProtocol;
 import bgu.spl.net.srv.Database;
-import jdk.internal.loader.AbstractClassLoaderValue;
-import org.graalvm.compiler.replacements.nodes.CStringConstant;
-import sun.awt.image.ImageWatched;
-import sun.util.resources.cldr.ext.LocaleNames_ka;
+
 
 import java.util.LinkedList;
 import java.util.List;
@@ -16,9 +13,9 @@ public class SubmissionProtocol implements MessagingProtocol<String> {
     boolean shouldTerminate;
     int clientNumber;
 
-    public SubmissionProtocol(){
+  /*  public SubmissionProtocol(){
         this.name=null;
-    }
+    }*/
 
 
     @Override
@@ -325,7 +322,7 @@ public class SubmissionProtocol implements MessagingProtocol<String> {
         LinkedList<String > output = new LinkedList<String >();
         String temp = new String(msg);
         while (temp.contains(" ")){
-            int index = msg.indexOf(" ");
+            int index = temp.indexOf(" ");
             String cut =  temp.substring(0,index);
             if (temp.length()>index)
                 temp =  temp.substring((index+1));
@@ -333,6 +330,7 @@ public class SubmissionProtocol implements MessagingProtocol<String> {
                 temp = "";
             output.add(cut);
         }
+        output.add(temp);
       return output;
     }
 

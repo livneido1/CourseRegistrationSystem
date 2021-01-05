@@ -40,6 +40,7 @@ public class Database {
 		courseMap=new ConcurrentHashMap<>();
 		loggedInMap=new HashMap<>();
 		clientCount=1;
+		coursesOrder =  new LinkedList<>();
 		initialize(System.getProperty("user.dir"));
 	}
 
@@ -57,7 +58,7 @@ public class Database {
 	 */
 	public boolean initialize(String coursesFilePath) {
 		try {
-			coursesFilePath=coursesFilePath+"\\courses.txt";
+			coursesFilePath=coursesFilePath+"/courses.txt";
 			File file=new File(coursesFilePath);
 			BufferedReader reader=new BufferedReader(new FileReader(file));
 			String s;
@@ -70,11 +71,12 @@ public class Database {
 					s=s.substring(index+1);
 					afterSplit[i]=s1;
 				}
-				afterSplit[4]=s;
+				afterSplit[3]=s;
 				LinkedList<Integer> kdam=new LinkedList<>();
-				String[] kdamCourses=afterSplit[2].split(",");
+				coursesOrder.addLast(Integer.parseInt(afterSplit[0]));
 				if (afterSplit[2].length()>2) {
 					afterSplit[2] = afterSplit[2].substring(1, afterSplit[2].length() - 1);
+					String[] kdamCourses=afterSplit[2].split(",");
 					for (int i = 0; i < kdamCourses.length; i++) {
 						kdam.addLast(Integer.parseInt(kdamCourses[i]));
 					}

@@ -1,12 +1,12 @@
 package bgu.spl.net.impl.echo;
 
 import bgu.spl.net.api.MessageEncoderDecoder;
-import com.sun.tools.javac.util.ArrayUtils;
-import sun.security.util.ArrayUtil;
+
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.function.DoubleToIntFunction;
+
 
 public class SubmissionEncoderDecoder implements MessageEncoderDecoder<String> {
     private byte[] bytes = new byte[1 << 10];
@@ -14,7 +14,7 @@ public class SubmissionEncoderDecoder implements MessageEncoderDecoder<String> {
 
     @Override
     public String decodeNextByte(byte nextByte) {
-        if (nextByte == '\n') {
+        if (nextByte == '\0') {
             return popString();
         }
         addByte(nextByte);
@@ -104,29 +104,25 @@ public class SubmissionEncoderDecoder implements MessageEncoderDecoder<String> {
     }
 
     private String popString() {
-        byte[] opCodeBytes=new byte[2];
-        for(int i=0;i<2;i++)
-        {
-            opCodeBytes[i]=bytes[i];
-        }
-        String output=translateOpCodeToName(opCodeBytes);
-        String result = new String(bytes, 3, len, StandardCharsets.UTF_8);
+
+        String result = new String(bytes, 0, len, StandardCharsets.UTF_8);
+        String opCode = result.substring(0,result.indexOf(" "));
+        result=result.substring(opCode.length());
+        String output=translateOpCodeToName(opCode);
+
         output=output+result;
         len = 0;
         return output;
 
     }
 
-    private String translateOpCodeToName(byte[] opCodeBytes) {
-        String bytesString=""+opCodeBytes[0];
-        for (int i=1;i<opCodeBytes.length;i++)
-            bytesString=bytesString+bytes[i];
+    private String translateOpCodeToName(String bytesString) {
 
-        if (bytesString.equals("0001"))
+        if (bytesString.equals("01"))
         {
             return "ADMINREG";
         }
-        else if (bytesString.equals("0002"))
+        else if (bytesString.equals("02"))
         {
             return "STUDENTREG";
         }
