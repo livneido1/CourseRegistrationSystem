@@ -14,6 +14,7 @@ import java.util.NoSuchElementException;
 public class SubmissionProtocol implements MessagingProtocol<String> {
     String name;
     boolean shouldTerminate;
+    int clientNumber;
 
     public SubmissionProtocol(){
         this.name=null;
@@ -73,9 +74,10 @@ public class SubmissionProtocol implements MessagingProtocol<String> {
             if (name==null) // the user has not been logged in yet
             {
                 Database database = Database.getInstance();
-                boolean success = database.logIn(userName,password);
-                if (success){
+                int success = database.logIn(userName,password);
+                if (success!=-1){
                     name = userName; // updates the protocol to hold the right user
+                    clientNumber=success;
                     return successMSG(opCode);
                 }
                 else

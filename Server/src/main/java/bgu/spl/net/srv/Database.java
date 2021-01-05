@@ -5,6 +5,7 @@ import bgu.spl.net.srv.UserInfo;
 import sun.awt.image.ImageWatched;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -22,11 +23,11 @@ import java.util.HashMap;
  */
 public class Database {
 	// TODO need to implement the Singelton implementation
-	private final static Database instace=null;
 	private ConcurrentHashMap<String, UserInfo> userMap;
 	private ConcurrentHashMap<Integer, CourseInfo> courseMap;
 	private HashMap<String, Boolean> loggedInMap;
 	private LinkedList<Integer> coursesOrder;
+	private int clientCount;
 
 
 	private static class DatabaseHolder{
@@ -38,13 +39,14 @@ public class Database {
 		userMap=new ConcurrentHashMap<>();
 		courseMap=new ConcurrentHashMap<>();
 		loggedInMap=new HashMap<>();
+		clientCount=1;
+		initialize(System.getProperty("user.dir"));
 	}
 
 	/**
 	 * Retrieves the single instance of this class.
 	 */
 
-	// TODO need to implement!!!
 	public static Database getInstance() {
 		return DatabaseHolder.instance;
 	}
@@ -54,7 +56,39 @@ public class Database {
 	 * into the Database, returns true if successful.
 	 */
 	public boolean initialize(String coursesFilePath) {
-		// TODO: implement
+		try {
+			coursesFilePath=coursesFilePath+"\\courses.txt";
+			File file=new File(coursesFilePath);
+			BufferedReader reader=new BufferedReader(new FileReader(file));
+			String s;
+			while (!(s=reader.readLine()).equals("")){
+				String[]afterSplit=new String[4];
+				for (int i=0;i<3;i++)
+				{
+					int index=s.indexOf("|");
+					String s1=s.substring(0,index);
+					s=s.substring(index+1);
+					afterSplit[i]=s1;
+				}
+				afterSplit[4]=s;
+				LinkedList<Integer> kdam=new LinkedList<>();
+				String[] kdamCourses=afterSplit[2].split(",");
+				if (afterSplit[2].length()>2) {
+					afterSplit[2] = afterSplit[2].substring(1, afterSplit[2].length() - 1);
+					for (int i = 0; i < kdamCourses.length; i++) {
+						kdam.addLast(Integer.parseInt(kdamCourses[i]));
+					}
+				}
+				CourseInfo courseInfo=new CourseInfo
+						(Integer.parseInt(afterSplit[0]),afterSplit[1],Integer.parseInt(afterSplit[3]),kdam);
+				courseMap.put(Integer.parseInt(afterSplit[0]),courseInfo);
+
+			}
+
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return false;
 	}
 
@@ -78,13 +112,14 @@ public class Database {
 		return false;
 	}
 
-	public synchronized boolean  logIn(String userName, String password){
+	public synchronized int logIn(String userName, String password){
 		if (userMap.containsKey(userName)&&userMap.get(userName).getPassword().equals(password)&&!loggedInMap.get(userName))
 		{
 			loggedInMap.put(userName,true);
-			return true;
+			clientCount++;
+			return clientCount;
 		}
-		return false;
+		return -1;
 	}
 
 	public boolean logout(String userName){
@@ -251,7 +286,5 @@ public class Database {
 		}
 		return true;
 	}
-
-
 
 }
