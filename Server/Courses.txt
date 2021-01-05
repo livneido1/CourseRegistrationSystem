@@ -1,0 +1,19 @@
+200|Introduction to football|[]|200
+900|How to not be lazy|[]|150
+777|Call it magic|[]|150
+300|Basic skills|[200]|110
+901|Average and beyond|[900]|100
+666|Harry Houdini- is he the best?|[777]|90
+442|Controling the Mid field|[200,300]|30
+541|Defence is the top priority|[200,300]|25
+433|Attack or die|[200,300]|50
+007|How to work hard like Ronaldo|[900,901]|75
+010|Messi- The little magician|[777,666]|120
+343|Surprising your opponent|[200,300,433]|30
+001|Master your defence|[200,300,541]|18
+111|Motivate yourself everyday|[900,901,007]|50
+555|Pull off a rabbit from you hat|[777,666,007]|50
+250|Best formations on modern age|[200,300,442,541,433]|45
+080|Late stage charging|[200,300,433,]|20
+100|Level up your game|[200,300,442,541,343,433,250]|30
+
