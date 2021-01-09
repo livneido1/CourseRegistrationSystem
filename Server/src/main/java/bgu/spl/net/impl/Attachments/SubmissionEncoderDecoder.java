@@ -1,52 +1,68 @@
-package bgu.spl.net.impl.echo;
+package bgu.spl.net.impl.Attachments;
 
 import bgu.spl.net.api.MessageEncoderDecoder;
 
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.function.DoubleToIntFunction;
 
 
 public class SubmissionEncoderDecoder implements MessageEncoderDecoder<String> {
     private byte[] bytes = new byte[1 << 10];
     private int len = 0;
+    private int sizeToSend=0;
+    private int currentSize;
+    private String currMsg="";
+    private HashMap<String, String> opcodes;
+    private HashMap<String,Integer> msgLen;
 
     @Override
     public String decodeNextByte(byte nextByte) {
+
         if (nextByte == '\0') {
-            return popString();
-        }
-        addByte(nextByte);
+            if (len != 0) {
+                currMsg += popString();
+                currentSize++;
+                if (currentSize == sizeToSend) {
+                    String toSend = currMsg;
+                    currMsg = "";
+                    currentSize = 0;
+                    sizeToSend = 0;
+                    return toSend;
+                }
+            } else
+                return null;
+        } else
+            addByte(nextByte);
+
+
         return null;
+
+
     }
 
 
 
     @Override
-    public byte[] encode(String message) {//TODO: check if we need to send opCode as bytes or String as bytes
+    public byte[] encode(String message) {
       byte[] output=new byte[1 << 10];
-      output[0]=0;
+      output[0]='0';
       if (message.startsWith("ACK"))
       {
-        output[1]='C';
-        output[2]=0;
+        output[1]='c';
         message=message.substring(4);
         String opCode;
-        if (message.charAt(1)<='9'&&message.charAt(1)>='0')//two digits number
-        {
-            opCode=message.substring(0,2);
-            message=message.substring(2);
-        }
-        else{
-            opCode=message.substring(0,1);
-            message=message.substring(1);
-        }
-        byte[] opCodeBytes=fillBytes(opCode);//4 bytes of opCode
-        for (int i=0;i<2;i++)
-        {
-            output[3+i]=opCodeBytes[i];
-        }
+
+          opCode = message.substring(0,2);
+          message = message.substring(2);
+          byte[] temp= opCode.getBytes();
+          for (int i =0; i< temp.length;i++){
+              output[2+i] = temp[i];
+          }
+
+
         byte[] everythingElse=message.getBytes();
         if (everythingElse.length>output.length-5)
         {
@@ -61,22 +77,14 @@ public class SubmissionEncoderDecoder implements MessageEncoderDecoder<String> {
         return output;
       }
       else {
-          output[1]='D';
+          output[1]='d';
           message=message.substring(6);
           String opCode;
-          if (message.charAt(1)<='9'&&message.charAt(1)>='0')//two digits number
-          {
-              opCode=message.substring(0,2);
-              message=message.substring(2);
-          }
-          else{
-              opCode=message.substring(0,1);
-              message=message.substring(1);
-          }
-          byte[] opCodeBytes=fillBytes(opCode);//4 bytes of opCode
-          for (int i=0;i<2;i++)
-          {
-              output[3+i]=opCodeBytes[i];
+          opCode = message.substring(0,2);
+          message = message.substring(2);
+          byte[] temp= opCode.getBytes();
+          for (int i =0; i< temp.length;i++){
+              output[2+i] = temp[i];
           }
           byte[] everythingElse=message.getBytes();
           if (everythingElse.length>output.length-5)
@@ -104,15 +112,31 @@ public class SubmissionEncoderDecoder implements MessageEncoderDecoder<String> {
     }
 
     private String popString() {
+        if (currentSize == 0) {
+            if (opcodes == null)
+                initOpCodes();
+            if (msgLen == null)
+                initMsgLen();
+            String result = new String(bytes, 0, len, StandardCharsets.UTF_8);
+            String opCode = result.substring(0, 2);
+            opCode = translateOpCodeToName(opCode);
+            sizeToSend = msgLen.get(opCode);
+            result = result.substring(2);
 
-        String result = new String(bytes, 0, len, StandardCharsets.UTF_8);
-        String opCode = result.substring(0,result.indexOf(" "));
-        result=result.substring(opCode.length());
-        String output=translateOpCodeToName(opCode);
+            String output = opCode + " ";
 
-        output=output+result;
-        len = 0;
-        return output;
+            output += result;
+            len = 0;
+            return output.toString();
+        }
+        else{
+
+            String res =  " " + new String(bytes,0,len,StandardCharsets.UTF_8);
+            len =0;
+            return  res;
+
+
+        }
 
     }
 
@@ -126,47 +150,47 @@ public class SubmissionEncoderDecoder implements MessageEncoderDecoder<String> {
         {
             return "STUDENTREG";
         }
-        else if (bytesString.equals("0003"))
+        else if (bytesString.equals("03"))
         {
             return "LOGIN";
         }
-        if (bytesString.equals("0004"))
+        if (bytesString.equals("04"))
         {
             return "LOGOUT";
         }
-        else if (bytesString.equals("0005"))
+        else if (bytesString.equals("05"))
         {
             return "COURSEREG";
         }
-        else if (bytesString.equals("0006"))
+        else if (bytesString.equals("06"))
         {
             return "KDAMCHECK";
         }
-        else if (bytesString.equals("0007"))
+        else if (bytesString.equals("07"))
         {
             return "COURSESTAT";
         }
-        else if (bytesString.equals("0008"))
+        else if (bytesString.equals("08"))
         {
             return "STUDENTSTAT";
         }
-        else if (bytesString.equals("0009"))
+        else if (bytesString.equals("09"))
         {
             return "ISREGISTERED";
         }
-        else if (bytesString.equals("000A"))
+        else if (bytesString.equals("0a"))
         {
             return "UNREGISTER";
         }
-        if (bytesString.equals("000B"))
+        if (bytesString.equals("0b"))
         {
             return "MYCOURSES";
         }
-        else if (bytesString.equals("000C"))
+        else if (bytesString.equals("0c"))
         {
             return "ACK";
         }
-        else if (bytesString.equals("000D"))
+        else if (bytesString.equals("0d"))
         {
             return "ERR";
         }
@@ -228,6 +252,41 @@ public class SubmissionEncoderDecoder implements MessageEncoderDecoder<String> {
             output[1]='D';
         }
         return output;
+    }
+
+
+    private void initOpCodes() {
+        opcodes =  new HashMap<>();
+        opcodes.put("ADMINREG", "01");
+        opcodes.put("STUDENTREG", "02");
+        opcodes.put("LOGIN", "03");
+        opcodes.put("LOGOUT", "04");
+        opcodes.put("COURSEREG", "05");
+        opcodes.put("KDAMCHECK", "06");
+        opcodes.put("COURSESTAT", "07");
+        opcodes.put("STUDENTSTAT", "08");
+        opcodes.put("ISREGISTERED", "09");
+        opcodes.put("UNREGISTER", "0a");
+        opcodes.put("MYCOURSES", "0b");
+        opcodes.put("ACK", "0c");
+        opcodes.put("ERR", "0d");
+    }
+
+    private void initMsgLen(){
+        msgLen =  new HashMap<>();
+        msgLen.put("ADMINREG", 2);
+        msgLen.put("STUDENTREG", 2);
+        msgLen.put("LOGIN", 2);
+        msgLen.put("LOGOUT", 1);
+        msgLen.put("COURSEREG", 1);
+        msgLen.put("KDAMCHECK", 1);
+        msgLen.put("STUDENTSTAT", 1);
+        msgLen.put("ISREGISTERED", 1);
+        msgLen.put("UNREGISTER", 1);
+        msgLen.put("MYCOURSES", 1);
+        msgLen.put("ACK", 1);
+        msgLen.put("ERR", 1);
+        msgLen.put("COURSESTAT",1);
     }
 
 }

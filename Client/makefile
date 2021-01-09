@@ -1,16 +1,19 @@
 CFLAGS:=-c -Wall -Weffc++ -g -std=c++11 -Iinclude
-LDFLAGS:=-lboost_system
+LDFLAGS:=-lboost_system -lpthread
 
-all: EchoClient
-	g++ -o bin/echoExample bin/connectionHandler.o bin/echoClient.o  $(LDFLAGS)
+all: submission
+	g++ -o bin/BGRSclient bin/SubmissionEncoderDecoder.o bin/ConnectionHandler.o bin/BGRSclient.o  $(LDFLAGS)
 
-EchoClient: bin/connectionHandler.o bin/echoClient.o
+submission: bin/SubmissionEncoderDecoder.o bin/ConnectionHandler.o bin/BGRSclient.o
 
-bin/connectionHandler.o: src/connectionHandler.cpp
-	g++ $(CFLAGS) -o bin/connectionHandler.o src/connectionHandler.cpp
+bin/SubmissionEncoderDecoder.o: src/SubmissionEncoderDecoder.cpp
+	g++ $(CFLAGS) -o bin/SubmissionEncoderDecoder.o src/SubmissionEncoderDecoder.cpp $(LDFLAGS)
 
-bin/echoClient.o: src/echoClient.cpp
-	g++ $(CFLAGS) -o bin/echoClient.o src/echoClient.cpp
+bin/ConnectionHandler.o: src/ConnectionHandler.cpp
+	g++ $(CFLAGS) -o bin/ConnectionHandler.o src/ConnectionHandler.cpp $(LDFLAGS)
+
+bin/BGRSclient.o: src/BGRSclient.cpp
+	g++ $(CFLAGS) -o bin/BGRSclient.o src/BGRSclient.cpp $(LDFLAGS)
 
 
 .PHONY: clean

@@ -1,4 +1,4 @@
-package bgu.spl.net.srv;
+package bgu.spl.net.Database;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.LinkedList;

@@ -1,4 +1,4 @@
-package bgu.spl.net.srv;
+package bgu.spl.net.Database;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -31,6 +31,11 @@ public class UserInfo {
     public boolean isAdmin() {
         return isAdmin;
     }
+
+    public HashMap<Integer, String> getMyCourses() {
+        return myCourses;
+    }
+
     public LinkedList<Integer> getCourses()
     {
         LinkedList<Integer> courses=new LinkedList<>();

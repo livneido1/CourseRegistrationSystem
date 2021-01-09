@@ -1,16 +1,9 @@
-package bgu.spl.net.srv;
-
-import bgu.spl.net.srv.CourseInfo;
-import bgu.spl.net.srv.UserInfo;
-import sun.awt.image.ImageWatched;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+package bgu.spl.net.Database;
 
 import java.io.*;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.xml.crypto.Data;
 import java.util.HashMap;
 
 /**
@@ -22,7 +15,6 @@ import java.util.HashMap;
  * You can add private fields and methods to this class as you see fit.
  */
 public class Database {
-	// TODO need to implement the Singelton implementation
 	private ConcurrentHashMap<String, UserInfo> userMap;
 	private ConcurrentHashMap<Integer, CourseInfo> courseMap;
 	private HashMap<String, Boolean> loggedInMap;
@@ -58,7 +50,7 @@ public class Database {
 	 */
 	public boolean initialize(String coursesFilePath) {
 		try {
-			coursesFilePath=coursesFilePath+"/courses.txt";
+			coursesFilePath=coursesFilePath+ "/Courses.txt";
 			File file=new File(coursesFilePath);
 			BufferedReader reader=new BufferedReader(new FileReader(file));
 			String s;
@@ -139,16 +131,25 @@ public class Database {
 		{
 			return false;
 		}
-		else if (studentDidKdam(courseMap.get(courseNum).getKdamCourses(),userMap.get(userName).getCourses()))
+		else if (!studentDidKdam(courseMap.get(courseNum).getKdamCourses(),userMap.get(userName).getCourses()))
 		{
 			return false;
 		}
 		else {
-			 if (courseMap.get(courseNum).registerStudent(userName))
-			 {
-				 userMap.get(userName).getCourses().add(courseNum);
-				 return true;
-			 }
+
+			UserInfo currentUser = userMap.get(userName);
+			CourseInfo course = courseMap.get(courseNum);
+			LinkedList<Integer> courses = currentUser.getCourses();
+			if (!(courses.contains(courseNum))) {
+				String courseName = course.getCourseName();
+				boolean success = course.registerStudent(userName);
+				if (success) {
+					currentUser.registerToCourse(courseNum, courseName);
+					return true;
+				}
+			}
+
+
 			 return false;
 		}
 	}
@@ -176,7 +177,7 @@ public class Database {
 		{
 			throw new NoSuchElementException();
 		}
-		if (userMap.get(userName).isAdmin()||!loggedInMap.get(userName))
+		if (!userMap.get(userName).isAdmin()||!loggedInMap.get(userName))
 		{
 			throw new IllegalArgumentException();
 		}
@@ -191,7 +192,7 @@ public class Database {
 			output=output+name+", ";
 		}
 		if (!studentsInCourse.isEmpty())
-		{output=output.substring(0,output.length()-3)+"]";}
+		{output=output.substring(0,output.length()-2)+"]";}
 		else{ output=output+"]";}
 		return output;
 	}
@@ -201,11 +202,11 @@ public class Database {
 
 	public String getStudentStats(String userName,String studentName)
 	{
-		if (!userMap.get(userName).isAdmin()||!loggedInMap.get(userName))
+		if (!userMap.get(userName).isAdmin()||!loggedInMap.get(userName) )
 		{
 			throw new IllegalArgumentException();
 		}
-		if (!userMap.containsKey(studentName))
+		if (!userMap.containsKey(studentName)|| userMap.get(studentName).isAdmin())
 		{
 			throw new NoSuchElementException();
 		}
@@ -217,7 +218,7 @@ public class Database {
 			output=output+courseMap.get(num).getCourseName()+", ";
 		}
 		if (!orderedList.isEmpty())
-			output=output.substring(0,output.length()-3)+"]";
+			output=output.substring(0,output.length()-2)+"]";
 		else
 			output=output+"]";
 		return output;

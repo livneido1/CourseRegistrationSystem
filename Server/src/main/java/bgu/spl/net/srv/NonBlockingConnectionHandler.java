@@ -58,6 +58,7 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
                     }
                 } finally {
                     releaseBuffer(buf);
+
                 }
             };
         } else {
