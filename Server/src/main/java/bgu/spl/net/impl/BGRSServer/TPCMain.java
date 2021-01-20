@@ -1,9 +1,9 @@
 package bgu.spl.net.impl.BGRSServer;
 
-import bgu.spl.net.impl.Attachments.SubmissionEncoderDecoder;
-import bgu.spl.net.impl.Attachments.SubmissionProtocol;
-
+import bgu.spl.net.impl.BGRSServer.Attachments.SubmissionEncoderDecoder;
+import bgu.spl.net.impl.BGRSServer.Attachments.SubmissionProtocol;
 import bgu.spl.net.srv.Server;
+
 
 public class TPCMain {
     public static void main(String[] args){
@@ -13,6 +13,5 @@ public class TPCMain {
                 SubmissionEncoderDecoder::new ).serve();
 
 
-        }
     }
-
+}

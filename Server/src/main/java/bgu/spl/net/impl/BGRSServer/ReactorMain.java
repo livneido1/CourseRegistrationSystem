@@ -1,7 +1,8 @@
 package bgu.spl.net.impl.BGRSServer;
 
-import bgu.spl.net.impl.Attachments.SubmissionEncoderDecoder;
-import bgu.spl.net.impl.Attachments.SubmissionProtocol;
+
+import bgu.spl.net.impl.BGRSServer.Attachments.SubmissionEncoderDecoder;
+import bgu.spl.net.impl.BGRSServer.Attachments.SubmissionProtocol;
 import bgu.spl.net.srv.Server;
 
 public class ReactorMain {
@@ -12,7 +13,7 @@ public class ReactorMain {
         int port = Integer.parseInt(args[0]);
 
         Server.reactor(
-               // Runtime.getRuntime().availableProcessors(),
+                // Runtime.getRuntime().availableProcessors(),
                 nThreads,
                 port,
                 () ->  new SubmissionProtocol(), //protocol factory

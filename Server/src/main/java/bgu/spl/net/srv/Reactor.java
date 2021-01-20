@@ -23,7 +23,11 @@ public class Reactor<T> implements Server<T> {
     private Thread selectorThread;
     private final ConcurrentLinkedQueue<Runnable> selectorTasks = new ConcurrentLinkedQueue<>();
 
-    public Reactor(int numThreads, int port, Supplier<MessagingProtocol<T>> protocolFactory, Supplier<MessageEncoderDecoder<T>> readerFactory) {
+    public Reactor(
+            int numThreads,
+            int port,
+            Supplier<MessagingProtocol<T>> protocolFactory,
+            Supplier<MessageEncoderDecoder<T>> readerFactory) {
 
         this.pool = new ActorThreadPool(numThreads);
         this.port = port;
@@ -35,7 +39,7 @@ public class Reactor<T> implements Server<T> {
     public void serve() {
 	selectorThread = Thread.currentThread();
         try (Selector selector = Selector.open();
-             ServerSocketChannel serverSock = ServerSocketChannel.open()) {
+                ServerSocketChannel serverSock = ServerSocketChannel.open()) {
 
             this.selector = selector; //just to be able to close
 
@@ -48,11 +52,11 @@ public class Reactor<T> implements Server<T> {
 
                 selector.select();
                 runSelectionThreadTasks();
-                // key - chan, interested ops , attachment
+
                 for (SelectionKey key : selector.selectedKeys()) {
 
                     if (!key.isValid()) {
-                         continue;
+                        continue;
                     } else if (key.isAcceptable()) {
                         handleAccept(serverSock, selector);
                     } else {
@@ -99,7 +103,6 @@ public class Reactor<T> implements Server<T> {
         clientChan.register(selector, SelectionKey.OP_READ, handler);
     }
 
-    // key - chan, interested ops , attachment
     private void handleReadWrite(SelectionKey key) {
         @SuppressWarnings("unchecked")
         NonBlockingConnectionHandler<T> handler = (NonBlockingConnectionHandler<T>) key.attachment();
